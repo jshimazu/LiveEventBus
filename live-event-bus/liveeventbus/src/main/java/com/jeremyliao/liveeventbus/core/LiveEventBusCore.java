@@ -117,14 +117,23 @@ public final class LiveEventBusCore {
 
     void registerReceiver() {
         if (isRegisterReceiver) {
-            return;
+            return
         }
-        Application application = AppUtils.getApp();
+        val application = AppUtils.getApp()
         if (application != null) {
-            IntentFilter intentFilter = new IntentFilter();
-            intentFilter.addAction(IpcConst.ACTION);
-            application.registerReceiver(receiver, intentFilter);
-            isRegisterReceiver = true;
+            val intentFilter = IntentFilter().apply {
+                addAction(IpcConst.ACTION)
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {  // Android 14 (API 34)
+                application.registerReceiver(
+                    receiver,
+                    intentFilter,
+                    Context.RECEIVER_NOT_EXPORTED  // 内部使用のため NOT_EXPORTED を使用
+                )
+            } else {
+                application.registerReceiver(receiver, intentFilter)
+            }
+            isRegisterReceiver = true
         }
     }
 
